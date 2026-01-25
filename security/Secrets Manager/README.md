@@ -60,9 +60,9 @@ Glue Job → Secrets Manager (read-only)
 
 ## Files
 
--- lambda access policy.json -> default policy for cloudwatch + secretsmanager for one secret only + KMS 
--- Secret manager Resource manager.json -> give access to lamdba + deny all other access
--- lambda_rotation.py -> lambda code to rotate credentials
+- lambda access policy.json -> default policy for cloudwatch + secretsmanager for one secret only + KMS 
+- Secret manager Resource manager.json -> give access to lamdba + deny all other access
+- lambda_rotation.py -> lambda code to rotate credentials
 
 
 ## To do:
@@ -71,4 +71,6 @@ Glue Job → Secrets Manager (read-only)
 3. Use glue to get access credentials from SM and access glue
    Add glue in the SM resource manager policy
    Give glue to access only one secret.
-4. Update all policies to have only minimum access.
+4. Update all policies to have only minimum access(Least-privilege policy).
+
+

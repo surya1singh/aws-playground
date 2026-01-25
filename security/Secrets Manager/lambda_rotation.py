@@ -1,6 +1,24 @@
-import json
 import boto3
 from botocore.exceptions import ClientError
+import json
+import string
+
+"""
+
+Step 1: Generate a new password and set it to the pending password in SM
+Step 2:
+cases
+1. The current password stored in the SM is the correct password
+    a. update MySQL password to pending password
+    b. update SM (previous = current, current = pending, pending to Null)
+2. The current password stored in the SM is the incorrect password
+    a. pending is correct
+        i. update SM (previous = current, current = pending, pending to Null)
+    b. previous is correct
+        i. update MySQL password to pending password
+        ii. update SM (current = pending, pending to Null)
+
+"""
 
 
 def lambda_handler(event, context):
@@ -13,13 +31,21 @@ def lambda_handler(event, context):
         region_name=region_name
     )
 
+    secret_value_response = get_secret(secret_name)
+
+    secret = get_secret_value_response['SecretString']
+    print(get_secret_value_response)
+
+
+def generate_password(length=32):
+    chars = string.ascii_letters + string.digits + "!@#$%^&*()"
+    return ''.join(secrets.choice(chars) for _ in range(length))
+
+
+def get_secret(secret_name):
     try:
-        get_secret_value_response = client.get_secret_value(
-            SecretId=secret_name
-        )
+        client.get_secret_value(secretId=secret_name)
     except ClientError as e:
         raise e
 
-    secret = get_secret_value_response['SecretString']
-
-    print(get_secret_value_response)
+    
