@@ -1,0 +1,43 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:us-east-1:123456789012:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:us-east-1:123456789012:log-group:/aws/lambda/mylambdaforsm:*"
+            ]
+        },
+        {
+            "Sid": "SecretsManagerGetAndDescribeSecret",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
+            ],
+            "Resource": "arn:aws:secretsmanager:us-east-1:123456789012:secret:test/secretsmanager-Re4sr9"
+        },
+        {
+            "Sid": "KMSDecryptKey",
+            "Effect": "Allow",
+            "Action": [
+                "kms:Decrypt"
+            ],
+            "Resource": "arn:aws:kms:*:*:key/*",
+            "Condition": {
+                "StringLike": {
+                    "kms:EncryptionContext:SecretARN": "arn:aws:secretsmanager:*:*:secret:*",
+                    "kms:ViaService": "secretsmanager.*.amazonaws.com"
+                }
+            }
+        }
+    ]
+}
