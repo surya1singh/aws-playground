@@ -1,7 +1,3 @@
-import boto3
-from botocore.exceptions import ClientError
-import json
-import string
 
 """
 
@@ -16,7 +12,9 @@ step 5: perform step createSecret, setSecret, testSecret, finishSecret
 import boto3
 from botocore.exceptions import ClientError
 import json
-import logger
+import logging
+import secrets
+import string
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -33,17 +31,20 @@ def lambda_handler(event, context):
     step = event['Step']
 
     metadata = client.describe_secret(SecretId=arn)
+    print("metadata ", metadata)
+    print("event",event)
     if not metadata['RotationEnabled']:
         logger.log_error("Secret %s is not enabled for rotation" % arn)
         raise ValueError("Secret %s is not enabled for rotation" % arn)
     
-    if token not in metadata['VersionIdsToStages']:
+    versions = metadata['VersionIdsToStages']
+    if token not in versions:
         logger.info("Secret version %s has no stage for rotation" % token)
         raise ValueError('Secret version %s has no stage for rotation' % token)
-    if token in metadata['VersionIdsToStages']['AWSCURRENT']:
+    if 'AWSCURRENT' in versions[token]:
         logger.info("Secret version %s already set as AWSCURRENT" % token)
         return
-    elif token not in metadata['VersionIdsToStages']['AWSPENDIND']:
+    elif 'AWSPENDING' not in versions[token]:
         logger.info("Secret version %s is not set to be rotated" % token)
         raise ValueError('Secret version %s is not set to be rotated' % token)
 
@@ -52,15 +53,30 @@ def lambda_handler(event, context):
     elif step == "setSecret":
         set_secret(client, arn, token)
     elif step == "testSecret":
-        test_secret(client, arn, token):
+        test_secret(client, arn, token)
     elif step == "finishSecret":
-        finish_secret(client, arn, token)"
+        finish_secret(client, arn, token)
     else:
         raise ValueError("Invalid step parameter")
 
 
+
+
 def create_secret(client, arn, token):
-    pass
+    """
+    Make sure the current Secret exists for AWSCURRENT
+    Read secret version for AWSPENDING, if that fails, put a new secret
+    """
+    
+    current_dict = get_secret_dict(client, arn, "AWSCURRENT")
+    try:
+        get_secret_dict(client, arn, "AWSPENDING", token)
+        logger.info("createSecret: Successfully retrieved secret for %s." % arn)
+    except client.exceptions.ResourceNotFoundException:
+        current_dict['password'] = generate_password()
+        client.put_secret_value(SecretId=arn, ClientRequestToken=token, SecretString=json.dumps(current_dict), VersionStages=['AWSPENDING'])
+        logger.info("createSecret: Successfully put secret for ARN %s and version %s." % (arn, token))
+
 
 def set_secret(client, arn, token):
     pass
@@ -76,4 +92,18 @@ def generate_password(length=32):
     chars = string.ascii_letters + string.digits + "!@#$%^&*()"
     return ''.join(secrets.choice(chars) for _ in range(length))
 
+
+def get_secret_dict(service_client, arn, stage, token=None):
+    required_fields = ['host', 'username', 'password']
+
+    if token:
+        secret = service_client.get_secret_value(SecretId=arn, VersionId=token, VersionStage=stage)
+    else:
+        secret = service_client.get_secret_value(SecretId=arn, VersionStage=stage)
+        
+    secret_dict = json.loads(secret['SecretString'])
+
+    logger.info("secret_dict",secret_dict)
+
+    return secret_dict
     
