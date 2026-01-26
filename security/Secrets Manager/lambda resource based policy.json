@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Id": "default",
+  "Statement": [
+    {
+      "Sid": "test-secretsmanager",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "secretsmanager.amazonaws.com"
+      },
+      "Action": "lambda:InvokeFunction",
+      "Resource": "arn:aws:lambda:us-east-1:123456789012:function:lambda2forSM"
+    }
+  ]
+}

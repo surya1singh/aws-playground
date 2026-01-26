@@ -79,13 +79,41 @@ def create_secret(client, arn, token):
 
 
 def set_secret(client, arn, token):
-    pass
+    """
+    TO DO:
+    Update MySQL crediantials
+
+    flow:
+        connect with current
+             True: update password AWSPENDING
+             False: connect with AWSPENDING
+    """
+    current_dict = get_secret_dict(client, arn, "AWSCURRENT")
+    pending_dict = get_secret_dict(client, arn, "AWSPENDING", token)
+    logger.info("setSecret: Successfully set password for secret arn %s." % arn)
 
 def test_secret(client, arn, token):
-    pass
+    """
+    TO DO:
+    Connect mysql with AWSPENDING and run a query
+    """
+    logger.info("testSecret: Successfully signed into MySQL DB with AWSPENDING secret in %s." % arn)
+    return
 
 def finish_secret(client, arn, token):
-    pass
+    
+    metadata = client.describe_secret(SecretId=arn)
+    current_version = None
+    for version in metadata["VersionIdsToStages"]:
+        if "AWSCURRENT" in metadata["VersionIdsToStages"][version]:
+            if version == token:
+                logger.info("finishSecret: Version %s already marked as AWSCURRENT for %s" % (version, arn))
+                return
+            current_version = version
+            break
+
+    client.update_secret_version_stage(SecretId=arn, VersionStage="AWSCURRENT", MoveToVersionId=token, RemoveFromVersionId=current_version)
+    logger.info("finishSecret: Successfully set AWSCURRENT stage to version %s for secret %s." % (token, arn))
 
 
 def generate_password(length=32):
@@ -93,16 +121,13 @@ def generate_password(length=32):
     return ''.join(secrets.choice(chars) for _ in range(length))
 
 
-def get_secret_dict(service_client, arn, stage, token=None):
-    required_fields = ['host', 'username', 'password']
-
+def get_secret_dict(client, arn, stage, token=None):
     if token:
-        secret = service_client.get_secret_value(SecretId=arn, VersionId=token, VersionStage=stage)
+        secret = client.get_secret_value(SecretId=arn, VersionId=token, VersionStage=stage)
     else:
-        secret = service_client.get_secret_value(SecretId=arn, VersionStage=stage)
+        secret = client.get_secret_value(SecretId=arn, VersionStage=stage)
         
     secret_dict = json.loads(secret['SecretString'])
-
     logger.info("secret_dict",secret_dict)
 
     return secret_dict
