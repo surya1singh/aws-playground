@@ -33,3 +33,7 @@ Raw source tables:
 * payments
 * shipments
 * returns
+
+
+Using base data from https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
+

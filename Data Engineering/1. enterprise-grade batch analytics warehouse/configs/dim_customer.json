@@ -1,0 +1,28 @@
+{
+  "dimension": "dim_customer",
+  "source": {
+    "type": "snapshot",
+    "table": "customers",
+    "format": "csv",
+    "header": true
+  },
+  "business_key": ["customer_id"],
+  "select_expr": {
+    "customer_id": "customer_id",
+    "customer_unique_id": "customer_unique_id",
+    "zip_code_prefix": "cast(customer_zip_code_prefix as int)",
+    "city": "lower(trim(customer_city))",
+    "state": "upper(trim(customer_state))"
+  },
+  "dedupe": {
+    "key": ["customer_id"],
+    "order_by": ["last_updated_ts desc"]
+  },
+  "scd2_columns": ["zip_code_prefix", "city", "state"],
+  "effective_to_open": "9999-12-31 00:00:00",
+  "output": {
+    "path": "dim_customer",
+    "partition_by_run_dt": true,
+    "write_current_view": true
+  }
+}
