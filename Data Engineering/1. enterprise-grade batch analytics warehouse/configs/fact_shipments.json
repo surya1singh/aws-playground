@@ -1,0 +1,23 @@
+{
+  "name": "fact_shipments",
+  "source": {
+    "type": "delta",
+    "table": "shipments",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "shipment_id": "shipment_id",
+    "order_id": "order_id",
+    "shipment_status": "shipment_status",
+    "carrier": "carrier",
+    "shipped_ts": "to_timestamp(shipped_ts)",
+    "delivered_ts": "to_timestamp(delivered_ts)"
+  },
+  "target": {
+    "type": "s3_append",
+    "path": "fact_shipments",
+    "partition_col": "dt"
+  }
+}

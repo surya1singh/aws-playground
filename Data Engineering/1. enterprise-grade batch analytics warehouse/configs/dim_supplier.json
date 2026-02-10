@@ -1,0 +1,27 @@
+{
+  "dimension": "dim_supplier",
+  "source": {
+    "type": "snapshot",
+    "table": "suppliers",
+    "format": "csv",
+    "header": true
+  },
+  "business_key": ["supplier_id"],
+  "select_expr": {
+    "supplier_id": "supplier_id",
+    "city": "lower(trim(city))",
+    "state": "upper(trim(state))",
+    "status": "supplier_status"
+  },
+  "dedupe": {
+    "key": ["supplier_id"],
+    "order_by": ["last_updated_ts desc"]
+  },
+  "scd2_columns": ["city", "state", "status"],
+  "effective_to_open": "9999-12-31 00:00:00",
+  "output": {
+    "path": "dim_supplier",
+    "partition_by_run_dt": true,
+    "write_current_view": true
+  }
+}

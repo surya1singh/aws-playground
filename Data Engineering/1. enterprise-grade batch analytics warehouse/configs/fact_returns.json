@@ -1,0 +1,22 @@
+{
+  "name": "fact_returns",
+  "source": {
+    "type": "delta",
+    "table": "returns",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "return_id": "return_id",
+    "order_id": "order_id",
+    "return_ts": "to_timestamp(return_ts)",
+    "return_reason": "return_reason",
+    "refund_amount": "cast(refund_amount as double)"
+  },
+  "target": {
+    "type": "s3_append",
+    "path": "fact_returns",
+    "partition_col": "dt"
+  }
+}

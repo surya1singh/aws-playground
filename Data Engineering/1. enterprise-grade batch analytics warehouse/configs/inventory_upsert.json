@@ -1,0 +1,24 @@
+{
+  "name": "inventory_current",
+  "source": {
+    "type": "delta",
+    "table": "inventory",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "product_id": "product_id",
+    "warehouse_id": "warehouse_id",
+    "on_hand_qty": "cast(on_hand_qty as int)",
+    "reserved_qty": "cast(reserved_qty as int)"
+  },
+  "key": ["product_id", "warehouse_id"],
+  "target": {
+    "type": "postgres_upsert",
+    "connection_name": "rds-postgres-conn",
+    "database": "analytics",
+    "target_table": "inventory_current",
+    "staging_table": "stg_inventory_current"
+  }
+}

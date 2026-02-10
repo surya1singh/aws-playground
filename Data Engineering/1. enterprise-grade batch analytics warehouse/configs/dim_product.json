@@ -1,0 +1,29 @@
+{
+  "dimension": "dim_product",
+  "source": {
+    "type": "snapshot",
+    "table": "products",
+    "format": "csv",
+    "header": true
+  },
+  "business_key": ["product_id"],
+  "select_expr": {
+    "product_id": "product_id",
+    "category": "product_category_name",
+    "weight_g": "cast(product_weight_g as int)",
+    "length_cm": "cast(product_length_cm as int)",
+    "height_cm": "cast(product_height_cm as int)",
+    "width_cm": "cast(product_width_cm as int)"
+  },
+  "dedupe": {
+    "key": ["product_id"],
+    "order_by": ["last_updated_ts desc"]
+  },
+  "scd2_columns": ["category", "weight_g", "length_cm", "height_cm", "width_cm"],
+  "effective_to_open": "9999-12-31 00:00:00",
+  "output": {
+    "path": "dim_product",
+    "partition_by_run_dt": true,
+    "write_current_view": true
+  }
+}

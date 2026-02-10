@@ -1,0 +1,21 @@
+{
+  "name": "fact_orders",
+  "source": {
+    "type": "delta",
+    "table": "orders",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "order_id": "order_id",
+    "customer_id": "customer_id",
+    "order_status": "order_status",
+    "order_ts": "to_timestamp(order_purchase_timestamp)"
+  },
+  "target": {
+    "type": "s3_append",
+    "path": "fact_orders",
+    "partition_col": "dt"
+  }
+}

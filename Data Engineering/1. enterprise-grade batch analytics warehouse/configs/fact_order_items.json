@@ -1,0 +1,22 @@
+{
+  "name": "fact_order_items",
+  "source": {
+    "type": "delta",
+    "table": "order_items",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "order_id": "order_id",
+    "product_id": "product_id",
+    "seller_id": "seller_id",
+    "price": "cast(price as double)",
+    "freight": "cast(freight_value as double)"
+  },
+  "target": {
+    "type": "s3_append",
+    "path": "fact_order_items",
+    "partition_col": "dt"
+  }
+}

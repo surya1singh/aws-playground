@@ -1,0 +1,21 @@
+{
+  "name": "fact_payments",
+  "source": {
+    "type": "delta",
+    "table": "payments",
+    "format": "csv",
+    "header": true
+  },
+  "op_col": "op",
+  "select_expr": {
+    "order_id": "order_id",
+    "payment_type": "payment_type",
+    "payment_installments": "cast(payment_installments as int)",
+    "payment_value": "cast(payment_value as double)"
+  },
+  "target": {
+    "type": "s3_append",
+    "path": "fact_payments",
+    "partition_col": "dt"
+  }
+}

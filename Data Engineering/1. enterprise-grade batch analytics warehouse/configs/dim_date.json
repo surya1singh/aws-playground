@@ -1,0 +1,25 @@
+{
+  "name": "dim_date",
+  "source": {
+    "type": "snapshot",
+    "table": "orders",
+    "format": "csv",
+    "header": true
+  },
+  "select_expr": {
+    "date": "to_date(order_purchase_timestamp)",
+    "year": "year(order_purchase_timestamp)",
+    "month": "month(order_purchase_timestamp)",
+    "day": "day(order_purchase_timestamp)",
+    "day_of_week": "date_format(order_purchase_timestamp, 'E')"
+  },
+  "dedupe": {
+    "key": ["date"],
+    "order_by": []
+  },
+  "output": {
+    "path": "dim_date",
+    "format": "parquet",
+    "partition_by_dt": false
+  }
+}
