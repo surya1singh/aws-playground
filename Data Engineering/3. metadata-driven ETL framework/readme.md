@@ -1,0 +1,3 @@
+# Metadata Driven ETL Framework
+
+Build a metadata-driven ETL framework that reads mapping specs (YAML/JSON) describing sources, targets, joins, filters, transformations, and SCD options, then dynamically generates and executes a Spark ETL pipeline. The framework produces curated parquet (or RDS loads) and emits run metadata + data quality metrics. Include unit tests for rule functions and contract tests validating output schemas.
