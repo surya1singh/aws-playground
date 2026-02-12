@@ -1,0 +1,57 @@
+name: fact_orders
+mode: batch
+
+sources:
+  orders:
+    type: s3_snapshot
+    format: csv
+    path: "s3://bucket/raw/snapshots/dt={{ run_dt }}/orders/"
+    options: { header: true }
+
+  items:
+    type: s3_snapshot
+    format: csv
+    path: "s3://bucket/raw/snapshots/dt={{ run_dt }}/order_items/"
+    options: { header: true }
+
+transforms:
+  - name: orders_clean
+    input: orders
+    select:
+      order_id: "order_id"
+      customer_id: "customer_id"
+      order_ts: "to_timestamp(order_purchase_timestamp)"
+      order_status: "order_status"
+    filter: "order_id is not null"
+
+  - name: items_clean
+    input: items
+    select:
+      order_id: "order_id"
+      price: "cast(price as double)"
+      freight: "cast(freight_value as double)"
+
+  - name: order_agg
+    input: items_clean
+    group_by: ["order_id"]
+    agg:
+      item_count: "count(1)"
+      items_total: "sum(price)"
+      freight_total: "sum(freight)"
+    derive:
+      order_total: "items_total + freight_total"
+
+joins:
+  - left: orders_clean
+    right: order_agg
+    type: left
+    on: ["order_id"]
+    output: joined
+
+target:
+  type: s3_parquet
+  path: "s3://bucket/curated/fact_orders/"
+  partition_by: ["dt"]
+  add_columns:
+    dt: "{{ run_dt }}"
+    run_id: "{{ run_id }}"

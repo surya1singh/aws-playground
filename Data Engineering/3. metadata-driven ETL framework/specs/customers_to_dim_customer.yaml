@@ -1,0 +1,57 @@
+name: dim_customer_scd2
+mode: scd2
+
+runtime:
+  run_dt: "{{ run_dt }}"          # passed by runner
+  watermark: null
+
+source:
+  type: s3_snapshot
+  format: csv
+  path: "s3://bucket/raw/snapshots/dt={{ run_dt }}/customers/"
+  options:
+    header: true
+
+target:
+  type: s3_parquet
+  path: "s3://bucket/curated/dim_customer/"
+  partition_by: ["run_dt"]
+  write_current_view: true
+  current_view_path: "s3://bucket/curated/dim_customer_current/"
+
+keys:
+  business: ["customer_id"]
+
+dedupe:
+  enabled: true
+  key: ["customer_id"]
+  order_by: ["last_updated_ts desc"]
+
+columns:
+  - name: customer_id
+    expr: "customer_id"
+    type: string
+    nullable: false
+
+  - name: customer_unique_id
+    expr: "customer_unique_id"
+    type: string
+
+  - name: zip_code_prefix
+    expr: "cast(customer_zip_code_prefix as int)"
+    type: int
+
+  - name: city
+    rule: "str.lower_trim"
+    args: ["customer_city"]
+    type: string
+
+  - name: state
+    rule: "str.upper_trim"
+    args: ["customer_state"]
+    type: string
+
+scd2:
+  track_columns: ["zip_code_prefix", "city", "state"]
+  effective_from: "{{ run_dt }}"
+  effective_to_open: "9999-12-31 00:00:00"
